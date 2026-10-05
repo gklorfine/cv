@@ -8,5 +8,5 @@
 *.toc
 *.xdv
 
-# Build output
-*.pdf
+
+old_cv.pdf

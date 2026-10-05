@@ -1,17 +1,15 @@
 \documentclass[12pt]{article}
 
-% REMOVE THIS
-\usepackage[latin, english]{babel}
-\usepackage{lipsum}  
+\usepackage[english]{babel}
 
-%% EDIT THIS: set \rightsidetrue for right side years, 
+%% EDIT THIS: set \rightsidetrue for right side years,
 %\rightsidefalse for left side
 \newif\ifrightside
 % \rightsidetrue
 \rightsidetrue
 
 %% EDIT THIS: to bold all mention of \citationboldauthor
-\newcommand{\citationboldauthor}{J. J. Doe}
+\newcommand{\citationboldauthor}{Klorfine, G.}
 
 %% OPTIONAL: change url link color
 \usepackage[dvipsnames]{xcolor}
@@ -19,6 +17,9 @@
 
 %% IMPORTANT: load template
 \usepackage{AcademicCVTemplate}
+
+% icons for profile links in the header
+\usepackage{fontawesome5}
 
 %% OPTIONAL: change font
 \usepackage{fontspec}
@@ -29,124 +30,275 @@
   ItalicFont=LinLibertineRI.ttf
 ]{LinLibertineR.ttf}
 
-% \cfoot{Page \thepage\ of \pageref*{LastPage}}
-\cfoot{\thepage}
+% footer: name and update date on the left, page X of Y on the right, in grey
+\lfoot{\small\color{dimgray}Gavin Marcus Klorfine \textperiodcentered{} Updated \today}
+\rfoot{\small\color{dimgray}Page \thepage\ of \pageref*{LastPage}}
+
+% set URLs in the body font rather than typewriter
+\urlstyle{same}
+
+% never hyphenate words; move them whole to the next line instead
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+% same space after a full stop as between words (no wider "sentence" gap,
+% which also misfires after abbreviations like "Dr.")
+\frenchspacing
+
+% ragged-right text so word spacing stays constant (ragged2e's version,
+% unlike \raggedright, leaves \years' \hfill pushing dates to the margin)
+\usepackage{ragged2e}
+\setlength{\RaggedRightRightskip}{0pt plus 20em}
+\AtBeginDocument{\RaggedRight}
 
 \definecolor{dimgray}{rgb}{0.45, 0.45, 0.45}
-\newcommand{\smallitem}[1]{\small\textcolor{dimgray}{#1}}
+
+% one gap used between all entries, citations and subhead groups
+\newlength{\entryskip}
+\setlength{\entryskip}{8pt}
+\newcommand{\entrygap}{\par\vspace{\entryskip}}
+% no extra list space when a list starts or ends a paragraph, so \entrygap
+% after a list gives the same gap as anywhere else
+\setlist{partopsep=0pt}
+
+% grey detail line: its own small paragraph, so every grey line (single or
+% wrapped) sits on the same small-text line spacing. With an optional label,
+% wrapped lines hang-indent to align after the colon:
+%   \smallitem{text}   or   \smallitem[Label]{text}
+% A \\ written after it is harmless (it's swallowed), so old lines still work.
+% (\parshape rather than \hangindent so the indent also works inside lists)
+\newlength{\detaillabelwidth}
+\makeatletter
+\newcommand{\smallitem}[2][]{%
+  \par{\small\color{dimgray}%
+  \ifx\relax#1\relax\else
+    \settowidth{\detaillabelwidth}{\textit{#1}: }%
+    \parshape 2 \@totalleftmargin \linewidth
+      \dimexpr\@totalleftmargin+\detaillabelwidth\relax
+      \dimexpr\linewidth-\detaillabelwidth\relax
+    \textit{#1}: %
+  \fi
+  #2\par}%
+  \@ifnextchar\\{\smallitem@gobblecr}{}}
+\def\smallitem@gobblecr\\{\@ifnextchar[{\smallitem@gobbleopt}{}}
+\def\smallitem@gobbleopt[#1]{}
+\makeatother
+
+% award line with the dollar amount in its own right-aligned column before the
+% years; amounts use lining, fixed-width figures so the digits line up
+% usage: \award{Name. Organization.}{\$1,000}{2023}  (leave the amount empty if none)
+\newlength{\awardamountwidth}
+\settowidth{\awardamountwidth}{\small\addfontfeatures{Numbers={Lining,Monospaced}}\$10,806}
+\newlength{\awardyearwidth}
+\settowidth{\awardyearwidth}{\small 2025, 2026}
+\newcommand{\award}[3]{%
+  #1\hfill
+  \makebox[\awardamountwidth][r]{\small\addfontfeatures{Numbers={Lining,Monospaced}}#2}%
+  \hspace{1.15em}%
+  \makebox[\awardyearwidth][r]{\small #3}}
+
+% bold label above a group of entries within a section
+\newcommand{\subhead}[2][]{\textbf{#2}\ifx\relax#1\relax\else\years{#1}\fi\par\vspace{\entryskip}}
+
+% hanging-indent list for APA-style references; the list is never split across
+% pages, within or between references (it moves whole, taking the section
+% heading above it along). Fine for short lists; a list longer than a page
+% would need the \@itempenalty line removed.
+\makeatletter
+\newenvironment{reflist}{%
+  \begin{itemize}[label={}, leftmargin=0.4in, labelwidth=0pt, labelsep=0pt,
+                  itemindent=-0.4in, itemsep=\entryskip, parsep=0pt]%
+  \interlinepenalty=10000
+  \@itempenalty=10000
+}{\end{itemize}}
+\makeatother
 
 
 \begin{document}
 
 \begin{leftsideheader}
 % THE HEADER
-\begin{flushleft}
-    \hfill{\updateinfo} \\
-    
-    {\huge Jane-John Doe} \\[5pt]
-    % {\centering \huge Jane-John Doe\par}
-    
-    421 Some Street \hfill \texttt{email@website.edu} \\
-    
-    Town, ST 12345, Country \hfill \url{http://website.edu}
-\end{flushleft}
+% left: name and position; right: date and contact links, one per line,
+% with icons in a column at the right edge. Both columns align at the bottom.
+\newcommand{\contact}[3]{\href{#1}{#2~\makebox[1.2em][c]{#3}}}
+\begin{minipage}[b]{0.55\linewidth}
+    {\huge Gavin Marcus Klorfine} \\[5pt]
+    Graduate Student, York University \\
+    Toronto, ON, Canada
+\end{minipage}\hfill
+\begin{minipage}[b]{0.43\linewidth}
+    \raggedleft
+    \contact{mailto:gklorfin@yorku.ca}{gklorfin@yorku.ca}{\faEnvelope[regular]} \\
+    \contact{https://gavinklorfine.com}{gavinklorfine.com}{\faGlobe} \\
+    \contact{https://github.com/gklorfine}{gklorfine}{\faGithub} \\
+    \contact{https://www.linkedin.com/in/gavin-klorfine/}{gavin-klorfine}{\faLinkedin} \\
+    \contact{https://orcid.org/0009-0003-0395-4512}{0009-0003-0395-4512}{\faOrcid}
+\end{minipage}
+\par\medskip
 {\centering\rule{\linewidth}{1pt}\par}
 % \cvtitle{Curriculum Vitae}
 \end{leftsideheader}
 
-\section{Research Interests}
-\lipsum[75]
-
-
-\section{Positions}
-Some position I accepted in a pandemic. \textsc{Great University}. \years{09/2020 - }\\
-\smallitem{Lorem ipsum dolor sit amet, consectetuer adipiscing elit.}\\
-
-Some position in the \textit{before-times}. \textsc{Awesome Inc.} \years{08/2019 - 08/2020}\\
-\smallitem{Lorem ipsum dolor sit amet, consectetuer adipiscing elit.}
-
 \section{Education}
-\textsc{Best University} \years{09/2014 - 08/2019}\\ 
-PhD in Astrophysics. Thesis: Some very long and probably niche, but cool thesis.\\
-\smallitem{Advisor: Professor XYZ ABCDE.}\\
+\textbf{MA, Quantitative Methods, Psychology} \years{September 2025 -- Present}\\
+\textit{York University, Toronto, ON, Canada}\\
+\smallitem[Supervisor]{Professor Christopher D. Green}\\
+\smallitem[Expected date of graduation]{July 2027}
+\entrygap
 
-\textsc{Better University} \years{08/2010 - 05/2014}\\
-Bachelor of WXYZ. Majors: Civil Engineering, Archaeology. Minor: Art History.\\
-\smallitem{GPA: 4.20/4.00.}
+\textbf{BSc, Specialized Honours, Psychology} \years{June 2025}\\
+\textit{York University, Toronto, ON, Canada} \years{May 2023 -- June 2025}\\
+\smallitem[GPA]{8.56 (out of 9.00), graduated \textit{summa cum laude}}\\
+\smallitem[Supervisor]{Professor Christopher D. Green}\\
+\smallitem[Thesis]{The replication crisis: \textit{p}-curves, \textit{z}-curves, and stereotype threat}\\
+\textit{University of Western Ontario, London, ON, Canada} \years{April 2023}\\
+\smallitem[GPA]{3.50 (out of 4.00)}\\
+\smallitem{66 course credits were achieved and subsequently transferred to York University in the continuation of my undergraduate degree.}
 
+\section{Thesis}
+\textbf{Undergraduate Honours Thesis} \years{April 2025}\\
+\textit{The replication crisis: p-curves, z-curves, and stereotype threat}\\
+\smallitem[Supervisor]{Professor Christopher D. Green}
+\smallitem[Synopsis]{The purpose of my honours thesis was to investigate and compare proposed methods of detecting questionable research practices (QRPs) in large sets of results---with the goal being to help combat psychology's current replication crisis. This was done using the stereotype threat literature, which is an effect known to have issues replicating.}
 
-\section{Publications}
-\begin{etaremune}[itemsep=0pt, parsep=0pt, leftmargin = \enumleftmargin] 
-    \citeitem{}{J. J. Doe, Author 2}{Super Awesome Paper That Will Be Out as Soon as I Figure Things Out}{}{in prep}{}
-    
-    \citeitem{https://google.com}{Author 1, J. J. Doe, Author 3, Author 4, Author 5}{Another Fascinating Paper Title that Was Just Recently Accepted}{2021}{Journal 1}{accepted for publication}
-    
-    \citeitem{https://google.com}{Author 1, Author 2, Author 3, Author 4, Author 5, J. J. Doe}{ Oldie but Goldie}{2018}{Journal 3}{475, 79}
-\end{etaremune}
+\section{Software Development}
+\subhead{R Packages Authored}
+\begin{reflist}
+    \item Klorfine, G., \& Friendly, M. (in development). \textit{ggfourfold: Fourfold displays for `ggplot2'}. R package. \url{https://gavinklorfine.com/ggfourfold/}\\
+    \smallitem[Co-authored vignette]{\href{https://gavinklorfine.com/ggfourfold/articles/ggfourfold.html}{\textit{Fourfold displays for `ggplot2'}}}
 
-\section{Selected Talks}
-\begin{itemize}[itemsep=0pt, parsep=0pt, leftmargin=0cm, label={}] 
-    \talkitem{Presentation name}{10/2021}{XXX Department, XYZ University}
-    \talkitem{Presentation name}{03/2021}{XXX Department, University of IJK}
-    \talkitem{Presentation name}{01/2021}{XXX Department, University of IJK}
-    \talkitem{Presentation name 2}{05/2020}{XXX Department, University of ABC}
-    \talkitem{Presentation name 2}{01/2020}{XXX Department, University of ZYX}    
+    \item Friendly, M., Klorfine, G., Jeppson, H., Hofmann, H., \& Cook, D. (2026). \textit{ggmosaic2: Mosaic plots in the `ggplot2' framework, extended}. R package. \url{https://doi.org/10.32614/CRAN.package.ggmosaic2}\\
+    \smallitem[Authored vignette]{\href{https://friendly.github.io/ggmosaic2/articles/introducing-ggmosaic2.html}{\textit{Introducing ggmosaic2: An enhanced ggmosaic}}}
+
+    \item Friendly, M., \& Klorfine, G. (2026). \textit{vcdExtra: `vcd' extensions and additions}. R package. \url{https://doi.org/10.32614/CRAN.package.vcdExtra}\\
+    \smallitem[Authored vignette]{\href{https://cran.r-project.org/web/packages/vcdExtra/vignettes/a1a-convert-collapse.html}{\textit{Steps toward tidy categorical data analysis}}}
+\end{reflist}
+
+\entrygap
+\subhead{R Packages Contributed to}
+\begin{itemize}
+    \item \textit{heplots: Visualizing Hypothesis Tests in Multivariate Linear Models} (\href{https://cran.r-project.org/package=heplots}{CRAN})
 \end{itemize}
 
-\section{Awards and Honors}
-Another O.T. Name Scholarship. XY Organization. \years{2014 - 2018}\\
-Government Fellowship. \years{2014 - 2019}\\
-Old-Timey Name Scholarship. Z Organization. \years{2012 - 2014}\\
-Dean's List. Better University. \years{2011, 2012}\\
-Best winner. Y Organization. \years{2011}\\
-First place. X Competition. \years{2010}
+\section{Research in Preparation}
+\begin{reflist}
+    \item Klorfine, G., \& Friendly, M. (manuscript in preparation). \textit{Steps toward tidy categorical data analysis in R}.
+
+    \item Klorfine, G., \& Green, C. D. (manuscript in preparation). \textit{Curves to detect bent truths: An investigation into p-curve and z-curve methods}.
+\end{reflist}
+
+\section{Research \& Professional Experience}
+\textbf{Consultant, Statistical Consulting Service (SCS)} \years{September 2026 -- Present}\\
+\textit{York University, Toronto, ON, Canada}
+\entrygap
+
+\textbf{Research Assistant, DataVis Lab} \years{April 2026 -- Present}\\
+\textit{York University, Toronto, ON, Canada}\\
+\smallitem[Principal Investigator]{Professor Michael L. Friendly}\\
+\smallitem{Hired to edit and provide technical support for Dr. Friendly's (in-progress) textbook, \href{https://friendly.github.io/Vis-MLM-book/}{\textit{Visualizing Multivariate Data and Models in R: A Romance in Many Dimensions}}, to be published by CRC Press.}
+\entrygap
+
+\textbf{Research Assistant, GreenLab} \years{July 2024 -- Present}\\
+\textit{York University, Toronto, ON, Canada}\\
+\smallitem[Principal Investigator]{Professor Christopher D. Green}\\
+\smallitem{Researched and analyzed current trends regarding the (mis)use of statistics and artificial intelligence (AI).}
+
+\section{Conference Presentations}
+\begin{reflist}
+    \item Klorfine, G., \& Green, C. D. (2025, May 24). \textit{The replication crisis: p-curves, z-curves, and stereotype threat}. The Thirteenth Annual Canadian Statistics Student Conference (CSSC), University of Saskatchewan, Saskatoon, SK, Canada. [Oral presentation]
+
+    \item Klorfine, G., \& Green, C. D. (2025, May 9). \textit{The replication crisis: p-curves, z-curves, and stereotype threat}. Conference for Undergraduate Health Research (CUHR) 2025, York University, Toronto, ON, Canada. [Oral presentation]
+\end{reflist}
+
+\section{Academic Awards and Recognition}
+\award{Master's Fellowship. York University.}{\$10,806}{2025, 2026}\\
+\award{PSYC 6136 Certificate of Excellence. York University.}{}{2026}\\
+\award{CSSC 1st Prize, Oral Presentation, Bachelor's. Statistical Society of Canada.}{\$100}{2025}\\
+\award{Dean's Honour Roll. York University.}{}{2024, 2025}\\
+\award{Continuing Student Scholarship. York University.}{\$880}{2024}\\
+\award{Provost Award. York University.}{\$1,000}{2023}\\
+\award{Dean's Honour List. University of Western Ontario.}{}{2023}
 
 \section{Teaching Experience}
-XYZ 101: A class. \years{2021} \\
-XYZ 201: Yet another class. \years{2021}
+\subhead{Teaching Assistantships, York University}
+HH/PSYC 2021 3.0 A: Statistical Methods I \years{Fall 2026}\\
+HH/PSYC 2020 6.0 F: Statistical Methods I \& II \years{Fall/Winter 2025--2026}
 
-\section{Technical Skills}
-Programming languages: Python, Julia, Bulbasaur, Go, Charmander, R, Java, MATLAB, Mathematica, Squirtle, all of 'em.
+\entrygap
+\subhead{Guest Lectures, York University}
+\textit{(Mis)using Statistics}, HH/PSYC 2020 6.0 F: Statistical Methods I \& II \years{March 18, 2026}
 
-High performance computing: One machine to rule them all.
+\section{Professional Workshops}
+\begin{reflist}
+    \item Klorfine, G., \& Laze, D. (2026, November 9, 16, \& 23; \textit{Scheduled}). \textit{Introduction to Python for data analysis}. Quantitative Methods Workshop Series, York University, Toronto, ON, Canada. \href{https://qm.info.yorku.ca/qmws/}{[Workshop page]} \href{https://github.com/gklorfine/Intro-to-Python-Workshop}{[Materials]}
 
-Statistics skills: Highly confident. Much credible.
+    \item Klorfine, G., \& Laze, D. (2026, June 26--28). \textit{Introduction to Python for data analysis}. Quantitative Methods Workshop Series, York University, Toronto, ON, Canada. \href{https://qm.info.yorku.ca/qmws-spring-2026/}{[Workshop page]} \href{https://github.com/gklorfine/Intro-to-Python-Workshop}{[Materials]}
+\end{reflist}
 
-Languages: Yes. Fluent probably.
-
-\section{Service and Outreach}
-
-Volunteer position 1. \years{2020 - }
+\section{Technical Skills and Qualifications}
+\subhead{Programming languages (and development environments)}
 \begin{itemize}
-    \item \smallitem{Lorem ipsum dolor sit amet, consectetuer adipiscing elit.}
-\end{itemize}
-Volunter position 3. \years{2016 - 2020}\\
-Volunteer position 2. \years{2010 - 2014}
-\begin{itemize}
-    \item \smallitem{\lipsum[66]}
+    \item R (RStudio)
+    \item Python (Visual Studio Code; standalone PsychoPy)
 \end{itemize}
 
+\entrygap
+\subhead{Statistical and analytical software}
+\begin{itemize}
+    \item Jamovi
+    \item JASP
+\end{itemize}
 
+\entrygap
+\subhead{Document preparation and markup}
+\begin{itemize}
+    \item \LaTeX
+    \item Markdown
+    \item Quarto
+    \item Microsoft Office Suite
+\end{itemize}
+
+\entrygap
+\subhead{Graphic design}
+\begin{itemize}
+    \item GNU Image Manipulation Program (GIMP)
+\end{itemize}
+\entrygap
+\subhead{Research methods and applied skills} 
+\begin{itemize}
+    \item Categorical data analysis
+    \item Data visualization 
+    \item Git and GitHub 
+    \item Anaconda 
+\end{itemize}
+
+\section{Academic Leadership and Service}
+
+\textbf{Executive Team, Program Evaluation Committee} \years{October 2025 -- Present}\\
+\textit{Psychology Undergraduate Mentorship Program (PUMP), York University}\\
+\smallitem{Collaboratively synthesize and report on feedback given to PUMP.}
+\entrygap
+
+\textbf{Mentor} \years{October 2025 -- Present}\\
+\textit{PUMP, York University}\\
+\smallitem{Students mentored:}
+{\small\color{dimgray}
+\begin{itemize}
+    \item Yibo Qi \years{Fall/Winter 2026--2027}
+    \item Umed Azimi \years{Fall/Winter 2025--2026}
+    \item M. Shaheer Ahmed \years{Fall/Winter 2025--2026}
+\end{itemize}}
+\entrygap
+
+\textbf{Information Day for Graduate Psychology Programs} \years{October 9, 2025}\\
+\textit{Department of Psychology, York University}\\
+\smallitem{Participated in a discussion panel followed by a lunch with professors and students, both prospective and current.}
+
+\section{Professional Affiliations}
+Statistical Society of Canada (SSC), Associate Member \years{April 2025 -- Present}\\
+Canadian Psychological Association (CPA), Student Affiliate \years{January 2025 -- Present}
 
 \section{References}
-
-Mrs. \textbf{D. Vxyza Abcde} \\
-ABCDEFG Inc. \\
-Town, ST 12345, Country \\
-Email: professor@website.edu \\
-
-Professor \textbf{Vxyza D. Abcde} \\
-Department of XYZABC \\
-Better University, Town, ST 12345, Country \\
-Email: professor2@website.edu \\
-
-Professor \textbf{Abcde Vxyza} \\
-Department of XYZABC \\
-Better University, Town, ST 12345, Country \\
-Email: professor3@website.edu \\
-
-% it'd be nice if you can keep this in
-% but I guess I can't enforce that...
-\thispagestyle{lastpagecopyright}
+Available upon request.
 
 \end{document}
