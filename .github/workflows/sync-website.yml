@@ -1,0 +1,40 @@
+# Copy cv.pdf into gklorfine.github.io/assets/cv.pdf whenever it changes on main.
+# Requires a WEBSITE_TOKEN repo secret: a fine-grained PAT with
+# Contents: Read and write access to gklorfine/gklorfine.github.io.
+name: Sync CV to website
+
+on:
+  push:
+    branches: [main]
+    paths: [cv.pdf]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out CV repo
+        uses: actions/checkout@v5
+        with:
+          path: cv
+
+      - name: Check out website repo
+        uses: actions/checkout@v5
+        with:
+          repository: gklorfine/gklorfine.github.io
+          token: ${{ secrets.WEBSITE_TOKEN }}
+          path: website
+
+      - name: Copy CV and push if changed
+        working-directory: website
+        run: |
+          cp ../cv/cv.pdf assets/cv.pdf
+          if git diff --quiet -- assets/cv.pdf; then
+            echo "CV unchanged; nothing to push."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898733+github-actions[bot]@users.noreply.github.com"
+          git add assets/cv.pdf
+          git commit -m "Update CV (from gklorfine/cv@${GITHUB_SHA::7})"
+          git push
